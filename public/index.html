@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Dashboard</title>
+    <style media="screen">
+      #counter {
+        margin-top: 1em;
+        font-family: sans-serif;
+        text-align: center;
+        color: #666;
+      }
+    </style>
+  </head>
+  <body>
+    <div style="width:100%;">
+      <canvas id="chart"></canvas>
+      <div id="counter">
+        <span id="count-total">#</span> tweets analyzed.
+        <span id="count-positive">#</span> are positive (<span id="percent-positive">%</span>%)
+        <span id="count-negative">#</span> are negative (<span id="percent-negative">%</span>%).
+      </div>
+    </div>
+
+    <script
+  src="https://code.jquery.com/jquery-3.2.1.min.js"
+  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+  crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.6.0/Chart.bundle.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/lodash/4.17.4/lodash.min.js"></script>
+    <script type="text/javascript">
+      var data = {
+        datasets: [{
+          data: [],
+          label: "Negativity",
+          backgroundColor: "rgba(255, 99, 132,0.4)",
+          borderColor: "rgba(255, 99, 132,1)"
+        }, {
+          data: [],
+          label: "Positivity",
+          backgroundColor: "rgba(151,205,187,0.4)",
+          borderColor: "rgba(151,205,187,1)"
+        }]
+      };
+
+      var ctx = document.getElementById("chart");
+      var chart = new Chart(ctx, {
+        type: 'line',
+        data: data,
+        options: {
+          responsive: true,
+          title:{
+            display:true,
+            text:'Tweet Senitment in reply to @realDonaldTrump'
+          },
+          tooltips: {
+            mode: 'index',
+            intersect: false,
+          },
+          hover: {
+            mode: 'nearest',
+            intersect: true
+          },
+          scales: {
+            xAxes: [{
+              display: true,
+              scaleLabel: {
+                display: true,
+                labelString: 'Score: 0 is neutral. The more negative the number the worse the sentiment is and vice-versa.'
+              }
+            }],
+            yAxes: [{
+              display: true,
+              scaleLabel: {
+                display: true,
+                labelString: 'Count'
+              }
+            }]
+          }
+        }
+      });
+
+      function addData(data) {
+        var filteredData = _.filter(data, function(o) { return o._id !== 0; });
+        var sortedData = _.sortBy(filteredData, '_id');
+
+        chart.data.labels = sortedData.map(function(obj) {
+          return obj._id;
+        })
+
+        chart.data.datasets[0].data = sortedData.map(function(obj) {
+          if(obj._id <= -1) return obj.count;
+        });
+
+        chart.data.datasets[1].data = sortedData.map(function(obj) {
+          if(obj._id >= -1) return obj.count;
+        });
+
+        // chart.data.datasets.forEach((dataset) => {
+        //   dataset.data = sortedData.map(function(obj) {
+        //     return obj.count;
+        //   });
+        // });
+
+        chart.update();
+      }
+
+      function showCount(total, positive, negative, positive_percent, negative_percent) {
+        $('#count-total').text(total);
+        $('#count-positive').text(positive);
+        $('#count-negative').text(negative);
+        $('#percent-positive').text(positive_percent);
+        $('#percent-negative').text(negative_percent);
+      }
+
+      function addCount(data) {
+        var positive = [];
+        var negative = [];
+        var total = 0;
+        var positive_percent = 0;
+        var negative_percent = 0;
+
+        data.map(function(obj) {
+          if(obj._id > 0) {
+            positive.push(obj.count)
+          } else {
+            negative.push(obj.count)
+          }
+        });
+
+        positive = positive.reduce(function(sum, value) {
+          return sum + value;
+        });
+
+        negative = negative.reduce(function(sum, value) {
+          return sum + value;
+        });
+
+        total = positive + negative;
+
+        positive_percent = Math.round(positive / total * 100);
+        negative_percent = Math.round(negative / total * 100);
+
+        showCount(total, positive, negative, positive_percent, negative_percent);
+      }
+
+      function getData() {
+        $.getJSON('http://localhost:3000/data', function(response) {
+          if(response && response.length > 0) {
+            addData(response);
+            addCount(response);
+          }
+        })
+      }
+
+      getData();
+      setInterval(getData, 10000);
+
+    </script>
+  </body>
+</html>
