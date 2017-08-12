@@ -83,14 +83,6 @@ app.get('/count', function (req, res) {
     })
 })
 
-// app.get('/worst-best-tweet', function (req, res) {
-//   Tweet
-//     .find({})
-//     .remove(tweets => {
-//       res.sendStatus(200)
-//     })
-// })
-
 app.get('/clear', function (req, res) {
   Tweet
     .find({})
