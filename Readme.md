@@ -8,7 +8,7 @@ I wanted to learn how `reactive` programming in javascript worked using [RxJS](h
 #### What?
 This code runs locally using [NodeJS](https://nodejs.org/) along side a [MongoDB](https://www.mongodb.com/) database.
 
-I am using the twitter-stream-api and filtering by tweets mentioning `@realDonaldTrump` and in_reply_to `realDonaldTrump`.
+I am using the [twitter-stream-api](https://dev.twitter.com/streaming/overview) and filtering by tweets mentioning `@realDonaldTrump` and in_reply_to `realDonaldTrump`.
 
 The code then runs the `tweet.text` through a [Sentiment](https://github.com/thisandagain/sentiment) analysis which scores it with a positive or negative whole number.
 
